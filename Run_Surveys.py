@@ -63,5 +63,6 @@ def main():
         # Not strictly necessary if daemonic mode is enabled but should be done if possible
         scheduler.shutdown()
 
-if __name__ == '__main__':
-    main()
+# Run the program. "if __name__ == '__main__'" doesn't
+# seem to work with VeloView's Python shell...
+main()
