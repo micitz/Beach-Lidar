@@ -6,7 +6,7 @@ and save the .pcap file to the desired project directory
 
 Created on Wed Sep 14 18:26:38 2022
 
-@author: argus
+@author: Michael Itzkin
 """
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -41,6 +41,9 @@ def take_survey(name, survey_time):
 
 
 def main():
+    """
+    Run the surveying program
+    """
     
     # Set these variables before running the script
     name = 'Office Scan'
