@@ -37,7 +37,7 @@ def take_survey(name, survey_time):
     # Set the name of the project and make a new folder to store the data in
     project_name = name.replace(' ', '_')
     SAVE_DIR = os.path.join(r'/home', 'argus', 'Documents', 
-                            'Lidar_Scans', 'Projects', 'project_name')
+                            'Lidar_Scans', 'Projects', project_name)
     os.mkdir(os.path.join(SAVE_DIR, curr_time))
     
     # Make the survey. The time.sleep(N) dictates how long the
@@ -49,7 +49,7 @@ def take_survey(name, survey_time):
     vv.stopRecording()
 
     # Go through the .pcap file and make .csv files with the data
-    lidar_data = LidarScan(scan_filename)
+    lidar_data = LidarScan(scan_filename, DATA_DIR=SAVE_DIR)
     lidar_data.analyze_pcap()
 
 
