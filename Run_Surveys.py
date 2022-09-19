@@ -9,16 +9,14 @@ Created on Wed Sep 14 18:26:38 2022
 @author: Michael Itzkin
 """
 
+from LidarScan import LidarScan
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from paraview.simple import *
 
 import datetime as dt
 import time
 import os
-
-# Set the save directory
-SAVE_DIR = os.path.join(r'/home', 'argus', 'Documents', 
-                        'Lidar_Scans', 'Projects', 'Office_Testing')
 
 
 def take_survey(name, survey_time):
@@ -31,13 +29,28 @@ def take_survey(name, survey_time):
     survey_time: Int with the number of seconds to run the scan for
     """
     
+    
+    # Set a string with the current time.
+    now = dt.datetime.now()
+    curr_time = '{}-{}-{}'.format(now.month, now.day, now.year)
+    
+    # Set the name of the project and make a new folder to store the data in
+    project_name = name.replace(' ', '_')
+    SAVE_DIR = os.path.join(r'/home', 'argus', 'Documents', 
+                            'Lidar_Scans', 'Projects', 'project_name')
+    os.mkdir(os.path.join(SAVE_DIR, curr_time))
+    
     # Make the survey. The time.sleep(N) dictates how long the
     # survey will be (in seconds). Note that a 10 second survey
     # produces a 20mb .pcap file.
-    curr_time = dt.datetime.now()
-    vv.recordFile(os.path.join(SAVE_DIR, '{} {}.pcap').format(name, curr_time))
+    scan_filename = os.path.join(SAVE_DIR, '{}_{}.pcap').format(project_name, curr_time)
+    vv.recordFile(scan_filename)
     time.sleep(survey_time)
     vv.stopRecording()
+
+    # Go through the .pcap file and make .csv files with the data
+    lidar_data = LidarScan(scan_filename)
+    lidar_data.analyze_pcap()
 
 
 def main():
@@ -47,7 +60,7 @@ def main():
     
     # Set these variables before running the script
     name = 'Office Scan'
-    survey_time = 10    # Seconds!
+    survey_time = 2    # Seconds!
     
     # These lines actually start and run the cron job. The '*/1' argument
     # passed to add_job() tells the schedule to run take_survey() every
