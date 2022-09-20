@@ -9,14 +9,24 @@ Created on Wed Sep 14 18:26:38 2022
 @author: Michael Itzkin
 """
 
-from LidarScan import LidarScan
-
 from apscheduler.schedulers.background import BackgroundScheduler
 from paraview.simple import *
 
 import datetime as dt
-import time
 import os
+import sys
+import time
+
+import logging
+logging.basicConfig()
+
+sys.path.append(r'/home/argus/Documents/Lidar_Scans')
+from Functions.LidarScan import LidarScan
+
+
+"""
+Code to run the survey
+"""
 
 
 def take_survey(name, survey_time):
@@ -32,24 +42,26 @@ def take_survey(name, survey_time):
     
     # Set a string with the current time.
     now = dt.datetime.now()
-    curr_time = '{}-{}-{}'.format(now.month, now.day, now.year)
+    curr_time = '{}-{}-{}_{}:{}'.format(now.month, now.day, now.year,
+                                        now.hour, now.minute)
     
     # Set the name of the project and make a new folder to store the data in
     project_name = name.replace(' ', '_')
     SAVE_DIR = os.path.join(r'/home', 'argus', 'Documents', 
-                            'Lidar_Scans', 'Projects', project_name)
-    os.mkdir(os.path.join(SAVE_DIR, curr_time))
+                            'Lidar_Scans', 'Projects', project_name, curr_time)
+    os.makedirs(SAVE_DIR)
     
     # Make the survey. The time.sleep(N) dictates how long the
     # survey will be (in seconds). Note that a 10 second survey
     # produces a 20mb .pcap file.
-    scan_filename = os.path.join(SAVE_DIR, '{}_{}.pcap').format(project_name, curr_time)
+    scan_filename = os.path.join(SAVE_DIR, '{}_{}.pcap'.format(project_name, curr_time))
     vv.recordFile(scan_filename)
     time.sleep(survey_time)
     vv.stopRecording()
 
     # Go through the .pcap file and make .csv files with the data
-    lidar_data = LidarScan(scan_filename, DATA_DIR=SAVE_DIR)
+    time.sleep(30)  # Might need to pause for a few seconds for the .pcap to show up
+    lidar_data = LidarScan(scan_filename, DATA_DIR=None)
     lidar_data.analyze_pcap()
 
 
@@ -60,14 +72,14 @@ def main():
     
     # Set these variables before running the script
     name = 'Office Scan'
-    survey_time = 2    # Seconds!
+    survey_time = 10    # Seconds!
     
     # These lines actually start and run the cron job. The '*/1' argument
     # passed to add_job() tells the schedule to run take_survey() every
     # hour at the top of the hour
     scheduler = BackgroundScheduler(daemon=False)
     scheduler.start()
-    scheduler.add_job(take_survey, trigger='cron', minute='*/1',
+    scheduler.add_job(take_survey, trigger='cron', minute='*/3',
                       args=(name, survey_time))
     
     # This try except keeps the scheduler running. Leave it here and don't modify!

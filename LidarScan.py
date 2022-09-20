@@ -161,7 +161,7 @@ class LidarScan():
     and work with LiDAR data
     """
     
-    def __init__(self, filename, DATA_DIR=DATA_DIR):
+    def __init__(self, filename, DATA_DIR):
         """
         Initialize the LidarScan object
         
@@ -171,17 +171,20 @@ class LidarScan():
         """
         
         # Set the variables
-        if '.pcap' in filename:
-            self.fname = os.path.join(DATA_DIR, filename)
+        self.DATA_DIR = DATA_DIR
+        if '.pcap' not in filename:
+            self.fname = '{}.pcap'.format(filename)
         else:
-            self.fname = os.path.join(DATA_DIR, '{}.pcap'.format(filename))
+            self.fname = filename
+        if self.DATA_DIR is not None:
+            self.fname = os.path.join(self.DATA_DIR, self.fname)
             
         # The scan has a long timestamp in the filename. Pull
         # out the components here and store as class attributes
         self.date_time = self._get_time()
         
         
-    def analyze_pcap(self):
+    def analyze_pcap(self, verbose=1, verbose_data=0, debug=0):
         """
         FILL THIS IN AFTER TESTING
         
@@ -189,9 +192,6 @@ class LidarScan():
         https://gist.github.com/prerakmody/678b771b671cfe18b7b9992dadde05eb
         """
         url_pcap = self.fname
-        verbose = 1
-        verbose_data = 0
-        debug = 0
         reader_pcap_file(url_pcap, verbose, verbose_data, debug)
         
         
@@ -203,22 +203,7 @@ class LidarScan():
         """
         Get time values from the filename
         """
-        
-        # First, split the filename by the period character. Then
-        # split by the system's path separator to get to the filename
-        # that contains the date.
-        [fname, frac_secs, extension] = self.fname.split('.')
-        pieces = fname.split(os.path.sep)
-        more_pieces = pieces[-1].split(' ')
-        date, time = more_pieces[-2], more_pieces[-1]
-        
-        # Get the date time components and make a datetime object
-        year, month, day = date.split('-')
-        hour, minutes, seconds = time.split(':')
-        return dt.datetime(year=int(year), month=int(month),
-                                day=int(day), hour=int(hour), 
-                                minute=int(minutes), second=int(seconds),
-                                microsecond=int(frac_secs))
+        pass
         
  
 """
@@ -228,10 +213,10 @@ Test the class
 if __name__ == '__main__':
     
     # Load in a scan
-    fname = 'Office Scan 2022-09-16 05:00:00.002905'
-    lidar_data = LidarScan(fname).analyze_pcap()
-    print(lidar_data.date_time)
-        
+    DATA_DIR = os.path.join(r'/home', 'argus', 'Documents', 'Lidar_Scans',
+                            'Projects', 'Office_Scan', '9-20-2022_19:57')
+    fname = 'Office_Scan_9-20-2022_19:57'
+    lidar_data = LidarScan(fname, DATA_DIR).analyze_pcap()
         
         
         
