@@ -14,14 +14,10 @@ from paraview.simple import *
 
 import datetime as dt
 import os
-import sys
 import time
 
 import logging
 logging.basicConfig()
-
-sys.path.append(r'/home/argus/Documents/Lidar_Scans')
-from Functions.LidarScan import LidarScan
 
 
 """
@@ -39,30 +35,20 @@ def take_survey(name, survey_time):
     survey_time: Int with the number of seconds to run the scan for
     """
     
-    
-    # Set a string with the current time.
-    now = dt.datetime.now()
-    curr_time = '{}-{}-{}_{}:{}'.format(now.month, now.day, now.year,
-                                        now.hour, now.minute)
-    
     # Set the name of the project and make a new folder to store the data in
     project_name = name.replace(' ', '_')
     SAVE_DIR = os.path.join(r'/home', 'argus', 'Documents', 
-                            'Lidar_Scans', 'Projects', project_name, curr_time)
-    os.makedirs(SAVE_DIR)
+                            'Lidar_Scans', 'Projects', project_name)
+    if not(os.path.exists(SAVE_DIR)):
+        os.makedirs(SAVE_DIR)
     
     # Make the survey. The time.sleep(N) dictates how long the
     # survey will be (in seconds). Note that a 10 second survey
     # produces a 20mb .pcap file.
-    scan_filename = os.path.join(SAVE_DIR, '{}_{}.pcap'.format(project_name, curr_time))
+    scan_filename = os.path.join(SAVE_DIR, '{}_{}.pcap'.format(project_name, dt.datetime.now()))
     vv.recordFile(scan_filename)
     time.sleep(survey_time)
     vv.stopRecording()
-
-    # Go through the .pcap file and make .csv files with the data
-    time.sleep(30)  # Might need to pause for a few seconds for the .pcap to show up
-    lidar_data = LidarScan(scan_filename, DATA_DIR=None)
-    lidar_data.analyze_pcap()
 
 
 def main():
@@ -79,7 +65,7 @@ def main():
     # hour at the top of the hour
     scheduler = BackgroundScheduler(daemon=False)
     scheduler.start()
-    scheduler.add_job(take_survey, trigger='cron', minute='*/3',
+    scheduler.add_job(take_survey, trigger='cron', hour='*/1',
                       args=(name, survey_time))
     
     # This try except keeps the scheduler running. Leave it here and don't modify!
