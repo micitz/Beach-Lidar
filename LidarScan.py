@@ -170,7 +170,7 @@ class LidarScan():
                   folder with the office scans.
         """
         
-        # Set the variables
+        # Set the filename and related path variables
         self.DATA_DIR = DATA_DIR
         if '.pcap' not in filename:
             self.fname = '{}.pcap'.format(filename)
@@ -179,8 +179,9 @@ class LidarScan():
         if self.DATA_DIR is not None:
             self.fname = os.path.join(self.DATA_DIR, self.fname)
             
-        # The scan has a long timestamp in the filename. Pull
-        # out the components here and store as class attributes
+        # The scan has a long timestamp in the filename. Find
+        # the timestamp and store it as a Datetime object. Make
+        # a new folder with the datetime as the name
         self.date_time = self._get_time()
         
         
@@ -203,7 +204,16 @@ class LidarScan():
         """
         Get time values from the filename
         """
-        pass
+        
+        # Get the name of the .pcap file without the path
+        [_, _, full_name] = self.fname.split(os.sep)
+        full_name = full_name[-31:-5]
+        
+        # Set the in and out string format
+        in_fmt = '%Y-%m-%d %H:%M:%S.%f'
+        out_fmt = '%B %d, %Y %H:%M'
+        
+        return dt.datetime.strptime(full_name, in_fmt).strftime(out_fmt)
         
  
 """
