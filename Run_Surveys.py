@@ -57,8 +57,8 @@ def main():
     """
     
     # Set these variables before running the script
-    name = 'Office Scan'
-    survey_time = 10    # Seconds!
+    name = 'Madeira_Test_October_5_2022'
+    survey_time = 17 * 60    # Seconds!
     
     # These lines actually start and run the cron job. The '*/1' argument
     # passed to add_job() tells the schedule to run take_survey() every
