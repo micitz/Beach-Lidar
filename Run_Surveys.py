@@ -21,7 +21,6 @@ import paraview.simple as smp
 
 import datetime as dt
 import numpy as np
-import shutil
 import time
 import os
 
@@ -32,7 +31,7 @@ interpreter = r"Velodyne Meta Interpreter"
 # Set lidar parameters
 port = 2368
 orientation = [0, -90, 0]
-survey_time = 10 # 60 * 10
+survey_time = 5 # 60 * 10
 
 
 #----------------------------------------------------------------------------#
@@ -190,7 +189,6 @@ def crop_and_save(reader, filename):
         # filenameCropped = filenameCroppedTemplate % time_step
 
         smp.SaveData(filenameFull, proxy=reader, PointDataArrays=['adjustedtime', 'azimuth', 'distance_m', 'intensity', 'laser_id', 'timestamp', 'vertical_angle'])
-        # smp.SaveData(filenameCropped, proxy=threshold, PointDataArrays=['adjustedtime', 'azimuth', 'distance_m', 'intensity', 'laser_id', 'timestamp', 'vertical_angle'])
 
 
 def record_stream(fname, survey_time, pre_pause=1):
@@ -233,36 +231,12 @@ def main():
     Run the program
     """
     
-    """
-    0. User Input only in this section
-    """
-    
     # Set the name of the project
     project_name = 'Madeira_Beach'
-    
-    # Set the lidar height
-    lidar_height = 0
-    
-    # Set the number of rows to process at a 
-    # time (no real reason to change this). Skip
-    # files are the number or sweeps of the lidar unit
-    # to skip. This will greatly reduce the file size without
-    # affecting the data too much
-    CHUNK_SIZE = 5000
-    SKIP_FILES = 10
-
-    # Set this to TRUE to just save the point cloud data
-    just_point_cloud = False
-    
-    """
-    1. Take a survey for a pre-determined number of seconds
-    """
-    
     
     # Set the current time
     current_time = dt.datetime.now()
     current_time_short = current_time.strftime('%Y%m%d%H%M')
-    current_time_long = current_time.strftime('%b_%d_%Y_%H_%M')
     
     # Setup the .pcap file for the scan
     BASE_DIR = r'/home/argus_user/Documents/Lidar'
@@ -274,40 +248,7 @@ def main():
     record_stream(fname, survey_time)
     
     time.sleep(5)
-    
-    """
-    2. Process the .pcap file produced by the lidar into .csv files
-    """
-   
-    # Open pcap file
-    reader = lvsmp.OpenPCAP(fname, calibration_file, interpreter)
-   
-    # Pull out the .csv files from the .pcap
-    csv_fname = os.path.join(PROJECT_DIR, f'{fna    stream.Stop()me_no_ext}.csv')
-    crop_and_save(reader, csv_fname) 
-    
-    """
-    3. Organize the output files to save hard drive space
-    """
-    
-    # Make a new folder for the current scan
-    new_folder = os.path.join(PROJECT_DIR, current_time_long) 
-    if not os.path.exists(new_folder):
-        os.makedirs(new_folder)
-    
-    # Move the .csv files from the project folder to the new folder
-    for file in os.listdir(PROJECT_DIR):
-        if file.endswith('.csv'):
-            source = os.path.join(PROJECT_DIR, file)
-            destination = os.path.join(new_folder, file)
-            shutil.move(source, destination)
-            
-    # Delete the .pcap file
-    os.remove(fname)
    
 
 if __name__ == '__main__':
-    while True:
-        if dt.datetime.now().minute == 0:
-            main()
-        time.sleep(60)
+    main()
